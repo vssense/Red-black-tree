@@ -10,19 +10,14 @@ void Construct(RBtree* tree)
 	tree->NIL = &NIL;
 
 	tree->root = tree->NIL;
-	tree->cmp = intcmp;
+	tree->cmp = IntCmp;
 }
 
 void Construct(RBtree* tree, int (*cmp)(const void*, const void*))
 {
 	assert(tree);
 
-	Node NIL = {};
-	NIL.color = black;
-	NIL.parent = &NIL;
-	tree->NIL = &NIL;
-
-	tree->root = tree->NIL;
+	Construct(tree);
 	tree->cmp = cmp;
 }
 
@@ -50,23 +45,16 @@ Node* FindParent(RBtree* tree, elem_t key)
 	return parent;
 }
 
-Node* NewNode(RBtree* tree, Node* parent, elem_t key)
+Node* ConstructNode(RBtree* tree, Node* parent, elem_t key)
 {
 	Node* node = (Node*)calloc(1, sizeof(Node));
 	node->parent = parent;
-	node->left  = tree->NIL;
+	node->left = tree->NIL;
 	node->right = tree->NIL;
 	node->color = red;
-	node->key   = key;
+	node->key = key;
 
 	return node;
-}
-
-void FirstCase(Node* node, Node* uncle)
-{
-	node->parent->color  = black;
-	uncle->parent->color = red;
-	uncle->color = black;
 }
 
 void RotateRight(RBtree* tree, Node* node)
@@ -134,7 +122,9 @@ void InsertBalance(RBtree* tree, Node* node)
 			Node* uncle = node->parent->parent->right;
 			if (uncle->color == red)
 			{
-				FirstCase(node, uncle);
+				node->parent->color = black;
+				uncle->parent->color = red;
+				uncle->color = black;
 				node = uncle->parent;
 			}
 			else //uncle->color == black
@@ -156,7 +146,9 @@ void InsertBalance(RBtree* tree, Node* node)
 			Node* uncle = node->parent->parent->left;
 			if (uncle->color == red)
 			{
-				FirstCase(node, uncle);
+				node->parent->color = black;
+				uncle->parent->color = red;
+				uncle->color = black;
 				node = uncle->parent;
 			}
 			else //uncle->color == black
@@ -181,7 +173,7 @@ void Insert(RBtree* tree, elem_t key)
 	assert(tree);
 
 	Node* parent = FindParent(tree, key);	
-	Node* new_node = NewNode(tree, parent, key);
+	Node* new_node = ConstructNode(tree, parent, key);
 
 	if (parent == tree->NIL)
 	{
@@ -195,7 +187,7 @@ void Insert(RBtree* tree, elem_t key)
 		}
 		else
 		{
-			parent->left  = new_node;
+			parent->left = new_node;
 		}
 	}
 	InsertBalance(tree, new_node);
@@ -330,7 +322,7 @@ void TreeDump(RBtree* tree)
 	system("start RBtree.png");
 }
 
-int intcmp(const void* elem1, const void* elem2)
+int IntCmp(const void* elem1, const void* elem2)
 {
 	return *(int*)elem1 - *(int*)elem2;
 	//
