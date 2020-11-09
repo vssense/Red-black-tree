@@ -161,6 +161,7 @@ void InsertBalance(RBtree* tree, Node* node)
 				node->parent->color = black;
 				node->parent->parent->color = red;
 				RotateLeft(tree, node->parent->parent);
+				break;
 			}
 
 		}
@@ -318,8 +319,8 @@ void TreeDump(RBtree* tree)
 
 	fclose(DumpFile);
 
-	system("dot -Tjpg RBtree.txt > RBtree.png");
-	system("start RBtree.png");
+	system("dot -Tjpg RBtree.txt > RBtree.jpg");
+	system("start RBtree.jpg");
 }
 
 int IntCmp(const void* elem1, const void* elem2)
