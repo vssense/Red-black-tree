@@ -3,9 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define POISON 0
-
 typedef int elem_t;
+
 typedef bool Color;
 
 const bool black = true; 
@@ -38,6 +37,7 @@ void Construct(RBtree* tree);
 void Construct(RBtree* tree, int (*cmp)(const void*, const void*));
 
 void Insert(RBtree* tree, elem_t key);
+void Delete(RBtree* tree, Node* node);
 
 void TreeDump(RBtree* tree);
 

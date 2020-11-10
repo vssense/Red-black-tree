@@ -194,31 +194,21 @@ void Insert(RBtree* tree, elem_t key)
 	InsertBalance(tree, new_node);
 }
 
-void PrintNodes(RBtree* tree, Node* node, FILE* DumpFile)
+void Transplant(RBtree* tree, Node* old_node, Node* new_node)
 {
-	if (node->color == red)
+	if (old_node->parent == tree->NIL)
 	{
-		// fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"{%d|%p|{%p|%p|%p}}\"]", node, node->key, node,
-		// 		node->left, node->parent, node->right);
-		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d\"]", node, node->key);
+		tree->root = new_node;
 	}
-	else
-	{ 
-		// fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"{%d|%p|{%p|%p|%p}}\"]", node, node->key, node,
-		// 		node->left, node->parent, node->right);
-		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d\"]", node, node->key);
-	}
-	if (node->left != tree->NIL)
+	else if (old_node->parent->left == old_node)
 	{
-		fprintf(DumpFile, "\"%p\":sw->\"%p\";\n", node, node->left);
-		PrintNodes(tree, node->left, DumpFile);
+		old_node->parent->left = new_node;
 	}
-	
-	if (node->right != tree->NIL)
+	else 
 	{
-		fprintf(DumpFile, "\"%p\":se->\"%p\";\n", node, node->right);
-		PrintNodes(tree, node->right, DumpFile);
+		old_node->parent->right = new_node;
 	}
+	new_node->parent = old_node->parent;
 }
 
 Node* TreeMin(RBtree* tree, Node* node)
@@ -243,6 +233,52 @@ Node* TreeMax(RBtree* tree, Node* node)
 		node = node->right;
 	}
 	return parent;
+}
+
+void DeleteBalance(RBtree* tree, Node* node_for_balance)
+{
+    ;
+}
+void Delete(RBtree* tree, Node* node)
+{
+    Node* node_for_balance = node->left;
+    Color original_color = node->color;
+    if (node->right == tree->NIL)
+    {
+        node_for_balance = node->left;
+        Transplant(tree, node, node->left);
+    }
+    else if (node->left == tree->NIL)
+    {
+        node_for_balance = node->right;
+        Transplant(tree, node, node->right);
+        //printf("123\n");//падает  
+    }
+    else
+    {
+        Node* closest = TreeMin(tree, node->right);
+        original_color = closest->color;
+        node_for_balance = closest->right;
+
+        if (closest->parent ==  node)
+        {
+            closest->right->parent = closest;
+        }
+        else
+        {
+            Transplant(tree, closest, closest->right);
+            closest->right = node->right;
+            closest->right->parent = closest;
+        }
+        Transplant(tree, node, closest);
+        closest->left = node->left;
+        closest->left->parent = closest;
+        closest->color = node->color;
+    }
+    // if (original_color == black)
+    // {
+    //     DeleteBalance(tree, node_for_balance);
+    // }
 }
 
 Node* NodeNext(RBtree* tree, Node* node)
@@ -304,6 +340,57 @@ bool IsFound(RBtree* tree, elem_t key)
 		return false;
 	}
 	return true;
+}
+
+
+void PrintNodes(RBtree* tree, Node* node, FILE* DumpFile)
+{
+	if (node->color == red)
+	{
+		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d\"]", node, node->key);
+	}
+	else
+	{ 
+		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d\"]", node, node->key);
+	}
+	if (node->left != tree->NIL)
+	{
+		fprintf(DumpFile, "\"%p\":sw->\"%p\";\n", node, node->left);
+		PrintNodes(tree, node->left, DumpFile);
+	}
+	
+	if (node->right != tree->NIL)
+	{
+		fprintf(DumpFile, "\"%p\":se->\"%p\";\n", node, node->right);
+		PrintNodes(tree, node->right, DumpFile);
+	}
+}
+
+void PrintNodesHard(RBtree* tree, Node* node, FILE* DumpFile)
+{
+	if (node->color == red)
+	{
+		fprintf(DumpFile, "\"%p\" [shape=\"record\", style=\"filled\", fillcolor=\"#E16456\","
+				"fontcolor=\"black\", label=\"{%d|%p|{%p|%p|%p}}\"]", node, node->key, node,
+				node->left, node->parent, node->right);
+	}
+	else
+	{ 
+		fprintf(DumpFile, "\"%p\" [shape=\"record\", style=\"filled\", fillcolor=\"#110F0F\","
+				"fontcolor=\"white\", label=\"{%d|%p|{%p|%p|%p}}\"]", node, node->key, node,
+				node->left, node->parent, node->right);
+	}
+	if (node->left != tree->NIL)
+	{
+		fprintf(DumpFile, "\"%p\":sw->\"%p\";\n", node, node->left);
+		PrintNodesHard(tree, node->left, DumpFile);
+	}
+	
+	if (node->right != tree->NIL)
+	{
+		fprintf(DumpFile, "\"%p\":se->\"%p\";\n", node, node->right);
+		PrintNodesHard(tree, node->right, DumpFile);
+	}
 }
 
 void TreeDump(RBtree* tree)
