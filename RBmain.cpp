@@ -36,15 +36,15 @@ int main()
 	
 	Delete(&tree, tree.root->left);
 
-	//  Insert(&tree, 18);
-	//  Insert(&tree, 23);
-	//  Insert(&tree, 16);
-	//  Insert(&tree, 15);
-	//  Insert(&tree, 22);
-	//  Insert(&tree, 24);
-	//  Insert(&tree, 11);
+	//Insert(&tree, 18);
+	//Insert(&tree, 23);
+	//Insert(&tree, 16);
+	//Insert(&tree, 15);
+	//Insert(&tree, 22);
+	//Insert(&tree, 24);
+	//Insert(&tree, 11);
 
-	//  TreeDump(&tree);
+	TreeDump(&tree);
 	Destruct(&tree);
 
 	return 0;

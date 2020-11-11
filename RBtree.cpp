@@ -202,13 +202,13 @@ void Transplant(RBtree* tree, Node* old_node, Node* new_node)
 	}
 	else if (old_node->parent->left == old_node)
 	{
-		old_node->parent->left = new_node;
+ 		old_node->parent->left = new_node;
 	}
 	else 
 	{
-		old_node->parent->right = new_node;
+ 		old_node->parent->right = new_node;
 	}
-	new_node->parent = old_node->parent;
+    new_node->parent = old_node->parent;
 }
 
 Node* TreeMin(RBtree* tree, Node* node)
@@ -309,7 +309,7 @@ void DeleteBalance(RBtree* tree, Node* node)
 
 void Delete(RBtree* tree, Node* node)
 {
-    Node* node_for_balance = tree->NIL;
+    Node* node_for_balance = nullptr;
     Color original_color = node->color;
 
     if (node->right == tree->NIL)
@@ -325,7 +325,7 @@ void Delete(RBtree* tree, Node* node)
     else
     {
         Node* closest = TreeMin(tree, node->right);
-        original_color = closest->color;
+        original_color = closest->color; 
         node_for_balance = closest->right;
 
         if (closest->parent ==  node)
@@ -348,8 +348,9 @@ void Delete(RBtree* tree, Node* node)
         closest->color = node->color;
         free(node);
     }
-    TreeDump(tree);
-
+    //TreeDump(tree);
+    
+    
     if (original_color == black)
     {
         DeleteBalance(tree, node_for_balance);
@@ -475,7 +476,7 @@ void TreeDump(RBtree* tree)
 	fprintf(DumpFile, "digraph G{\n");
 	fprintf(DumpFile, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"];\n");
 
-	PrintNodesHard(tree, tree->root, DumpFile);
+	PrintNodes(tree, tree->root, DumpFile);
 
 	fprintf(DumpFile, "}");
 
