@@ -235,14 +235,83 @@ Node* TreeMax(RBtree* tree, Node* node)
 	return parent;
 }
 
-void DeleteBalance(RBtree* tree, Node* node_for_balance)
+void DeleteBalance(RBtree* tree, Node* node)
 {
-    ;
+    while (node != tree->root && node->color == black)
+    {
+        if (node == node->parent->left)
+        {
+            Node* brother = node->parent->right;
+            if (brother->color == red) 
+            {
+                brother->color = black;
+                node->parent->color = red;
+                RotateLeft(tree, node->parent);
+                brother = node->parent->right;
+            }
+            if (brother->left->color == black &&
+                brother->right->color == black)
+            {
+                brother->color = red;
+                node = node->parent;
+            }
+            else 
+            {
+                if (brother->right->color == black)
+                {
+                    brother->left->color = black;
+                    brother->color = red;
+                    RotateRight(tree, brother);
+                    brother = node->parent->right;
+                }
+                brother->color = node->parent->color;
+                node->parent->color = black;
+                brother->right->color = black;
+                RotateLeft(tree, node->parent);
+                node = tree->root;
+            }
+        }
+        else /*(node == node->parent->right)*/
+        {
+            Node* brother = node->parent->right;
+            if (brother->color == red) 
+            {
+                brother->color = black;
+                node->parent->color = red;
+                RotateRight(tree, node->parent);
+                brother = node->parent->left;
+            }
+            if (brother->left->color == black &&
+                brother->right->color == black)
+            {
+                brother->color = red;
+                node = node->parent;
+            }
+            else 
+            {
+                if (brother->left->color == black)
+                {
+                    brother->right->color = black;
+                    brother->color = red;
+                    RotateLeft(tree, brother);
+                    brother = node->parent->left;
+                }
+                brother->color = node->parent->color;
+                node->parent->color = black;
+                brother->left->color = black;
+                RotateRight(tree, node->parent);
+                node = tree->root;
+            }   
+        }
+    }
+    tree->root->color = black;
 }
+
 void Delete(RBtree* tree, Node* node)
 {
-    Node* node_for_balance = node->left;
+    Node* node_for_balance = tree->NIL;
     Color original_color = node->color;
+
     if (node->right == tree->NIL)
     {
         node_for_balance = node->left;
@@ -252,7 +321,6 @@ void Delete(RBtree* tree, Node* node)
     {
         node_for_balance = node->right;
         Transplant(tree, node, node->right);
-        //printf("123\n");//падает  
     }
     else
     {
@@ -262,23 +330,30 @@ void Delete(RBtree* tree, Node* node)
 
         if (closest->parent ==  node)
         {
-            closest->right->parent = closest;
+            node_for_balance->parent = closest;
         }
         else
         {
+            printf("%p\n", node_for_balance);
             Transplant(tree, closest, closest->right);
+            printf("%p\n", node_for_balance);
+
             closest->right = node->right;
             closest->right->parent = closest;
         }
+
         Transplant(tree, node, closest);
         closest->left = node->left;
         closest->left->parent = closest;
         closest->color = node->color;
+        free(node);
     }
-    // if (original_color == black)
-    // {
-    //     DeleteBalance(tree, node_for_balance);
-    // }
+    TreeDump(tree);
+
+    if (original_color == black)
+    {
+        DeleteBalance(tree, node_for_balance);
+    }
 }
 
 Node* NodeNext(RBtree* tree, Node* node)
@@ -400,7 +475,7 @@ void TreeDump(RBtree* tree)
 	fprintf(DumpFile, "digraph G{\n");
 	fprintf(DumpFile, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"];\n");
 
-	PrintNodes(tree, tree->root, DumpFile);
+	PrintNodesHard(tree, tree->root, DumpFile);
 
 	fprintf(DumpFile, "}");
 

@@ -37,6 +37,7 @@ void Construct(RBtree* tree);
 void Construct(RBtree* tree, int (*cmp)(const void*, const void*));
 
 void Insert(RBtree* tree, elem_t key);
+Node* TreeMin(RBtree* tree, Node* node);
 void Delete(RBtree* tree, Node* node);
 
 void TreeDump(RBtree* tree);
