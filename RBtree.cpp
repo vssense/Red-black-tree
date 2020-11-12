@@ -243,7 +243,6 @@ void DeleteBalance(RBtree* tree, Node* node)
 {
     while (node != tree->root && node->color == black)
     {
-        
         if (node == node->parent->left)
         {
             Node* brother = node->parent->right;
@@ -309,10 +308,10 @@ void DeleteBalance(RBtree* tree, Node* node)
             }   
         }
     }
-    tree->root->color = black;
+    node->color = black;
 }
 
-void Delete(RBtree* tree, Node* node)
+void DeleteNode(RBtree* tree, Node* node)
 {
     Node* node_for_balance = nullptr;
     Color original_color = node->color;
@@ -356,6 +355,17 @@ void Delete(RBtree* tree, Node* node)
         DeleteBalance(tree, node_for_balance);
     }
 }
+
+void Delete(RBtree* tree, elem_t key)
+{
+    Node* node_to_delete = Find(tree, key);
+
+    if (node_to_delete != tree->NIL)
+    {
+        DeleteNode(tree, node_to_delete);
+    }
+}
+
 
 Node* NodeNext(RBtree* tree, Node* node)
 {

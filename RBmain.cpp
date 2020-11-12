@@ -33,10 +33,14 @@ int main()
 	// Insert(&tree, 5);
 	// Insert(&tree, 2);
 	// Insert(&tree, 8);
-	
-	Delete(&tree, tree.root->left->left);
-	Delete(&tree, tree.root->right->left);
-	Delete(&tree, tree.root->right->left);
+		
+	for (int i = 0; i < 10; ++i)
+	{
+		Delete(&tree, i * 5);	
+	}
+	// Delete(&tree, tree.root->left->left);
+	// Delete(&tree, tree.root->right->left);
+	// Delete(&tree, tree.root->right->left);
 	// Delete(&tree, tree.root->right->left);
 	// Delete(&tree, tree.root->left->right);
 	// Delete(&tree, tree.root->left->left);
