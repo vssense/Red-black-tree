@@ -4,13 +4,15 @@ void Construct(RBtree* tree)
 {
 	assert(tree);
 
-	Node NIL = {};
-	NIL.color = black;
-	NIL.parent = &NIL;
-	tree->NIL = &NIL;
+    Node* NIL = (Node*)calloc(1, sizeof(Node));
+    NIL->color = black;
+    NIL->parent = NIL;
+    NIL->left = NIL;
+    NIL->right = NIL;
+    tree->NIL = NIL;
 
-	tree->root = tree->NIL;
-	tree->cmp = IntCmp;
+    tree->root = tree->NIL;
+    tree->cmp = IntCmp;
 }
 
 void Construct(RBtree* tree, int (*cmp)(const void*, const void*))
@@ -59,56 +61,60 @@ Node* ConstructNode(RBtree* tree, Node* parent, elem_t key)
 
 void RotateRight(RBtree* tree, Node* node)
 {	
-	if (node == node->parent->left)
-	{
-		node->parent->left = node->left;		
-	}
-	else if (node == node->parent->right)
-	{
-		node->parent->right = node->left;
-	}
-	
-	if (node->parent != tree->NIL)
-	{
-		node->left->parent = node->parent; // now we don't depend on the outside of "node"
-	}
-	else // if node == root
-	{
-		tree->root = node->left;
-		node->left->parent = tree->NIL;
-	}
-	
-	node->left = node->left->right;
-	node->left->parent->right = node;
-	node->parent = node->left->parent; 
-	node->left->parent = node;
+    Node* left_child = node->left;
+    node->left = left_child->right;
+
+    if (left_child->right != tree->NIL)
+    {
+        left_child->right->parent = node;
+    }
+
+    left_child->parent = node->parent;
+
+    if (node->parent == tree->NIL)
+    {
+        tree->root = left_child;
+    }
+    else if (node->parent->right == node)
+    {
+        node->parent->right = left_child;
+    }
+    else
+    {
+        node->parent->left = left_child;
+    }
+
+    left_child->right = node;
+    node->parent = left_child;
 }
 
 void RotateLeft(RBtree* tree, Node* node)
 {	
-	if (node == node->parent->right)
-	{
-		node->parent->right = node->right;		
-	}
-	else if (node == node->parent->left)
-	{
-		node->parent->left = node->right;
-	}
-	
-	if (node->parent != tree->NIL)
-	{
-		node->right->parent = node->parent; // now we don't depend on the outside of "node"
-	}
-	else // if node == root
-	{
-		tree->root = node->right;
-		node->right->parent = tree->NIL;
-	}
-	
-	node->right = node->right->left;
-	node->right->parent->left = node;
-	node->parent = node->right->parent; 
-	node->right->parent = node;
+	Node* right_child = node->right;
+    node->right = right_child->left;
+
+    if (right_child->left != tree->NIL)
+    {
+        right_child->left->parent = node;
+    }
+
+    right_child->parent = node->parent;
+
+    if (node->parent == tree->NIL)
+    {
+        tree->root = right_child;
+    }
+    else if (node->parent->left == node)
+    {
+        node->parent->left = right_child;
+    }
+    else
+    {
+        node->parent->right = right_child;
+    }
+
+    right_child->left = node;
+    node->parent = right_child;
 }
 
 void InsertBalance(RBtree* tree, Node* node)
@@ -137,7 +143,6 @@ void InsertBalance(RBtree* tree, Node* node)
 				node->parent->color = black;
 				node->parent->parent->color = red;
 				RotateRight(tree, node->parent->parent);
-				break;	
 			}
 		}
 
@@ -161,7 +166,6 @@ void InsertBalance(RBtree* tree, Node* node)
 				node->parent->color = black;
 				node->parent->parent->color = red;
 				RotateLeft(tree, node->parent->parent);
-				break;
 			}
 
 		}
@@ -239,6 +243,7 @@ void DeleteBalance(RBtree* tree, Node* node)
 {
     while (node != tree->root && node->color == black)
     {
+        
         if (node == node->parent->left)
         {
             Node* brother = node->parent->right;
@@ -273,7 +278,7 @@ void DeleteBalance(RBtree* tree, Node* node)
         }
         else /*(node == node->parent->right)*/
         {
-            Node* brother = node->parent->right;
+            Node* brother = node->parent->left;
             if (brother->color == red) 
             {
                 brother->color = black;
@@ -334,10 +339,7 @@ void Delete(RBtree* tree, Node* node)
         }
         else
         {
-            printf("%p\n", node_for_balance);
             Transplant(tree, closest, closest->right);
-            printf("%p\n", node_for_balance);
-
             closest->right = node->right;
             closest->right->parent = closest;
         }
@@ -348,8 +350,6 @@ void Delete(RBtree* tree, Node* node)
         closest->color = node->color;
         free(node);
     }
-    //TreeDump(tree);
-    
     
     if (original_color == black)
     {
@@ -489,7 +489,6 @@ void TreeDump(RBtree* tree)
 int IntCmp(const void* elem1, const void* elem2)
 {
 	return *(int*)elem1 - *(int*)elem2;
-	//
 }
 
 void DestructNodes(RBtree* tree, Node* node)
