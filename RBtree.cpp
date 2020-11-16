@@ -9,6 +9,7 @@ void Construct(RBtree* tree)
     NIL->parent = NIL;
     NIL->left = NIL;
     NIL->right = NIL;
+    NIL->num = 1;
     tree->NIL = NIL;
 
     tree->root = tree->NIL;
@@ -35,6 +36,8 @@ Node* FindParent(RBtree* tree, elem_t key)
 	while (tmp != tree->NIL)
 	{
 		parent = tmp;
+        parent->num--;
+
 		if (tree->cmp(&key, &tmp->key) > 0)
 		{
 			tmp = parent->right;
@@ -86,6 +89,8 @@ void RotateRight(RBtree* tree, Node* node)
 
     left_child->right = node;
     node->parent = left_child;
+    node->num = node->left->num + node->right->num - 2;
+    left_child->num = left_child->left->num + left_child->right->num - 2;
 }
 
 void RotateLeft(RBtree* tree, Node* node)
@@ -115,6 +120,8 @@ void RotateLeft(RBtree* tree, Node* node)
 
     right_child->left = node;
     node->parent = right_child;
+    node->num = node->left->num + node->right->num - 2;
+    right_child->num = right_child->left->num + right_child->right->num - 2;
 }
 
 void InsertBalance(RBtree* tree, Node* node)
@@ -212,6 +219,7 @@ void Transplant(RBtree* tree, Node* old_node, Node* new_node)
 	{
  		old_node->parent->right = new_node;
 	}
+    new_node->num = old_node->num;
     new_node->parent = old_node->parent;
 }
 
@@ -239,8 +247,19 @@ Node* TreeMax(RBtree* tree, Node* node)
 	return parent;
 }
 
+void FixNums(RBtree* tree, Node* node)
+{
+    while (node != tree->root)
+    {
+        node->num++;
+        node = node->parent;
+    }
+    node->num++;
+}
+
 void DeleteBalance(RBtree* tree, Node* node)
 {
+    FixNums(tree, node);
     while (node != tree->root && node->color == black)
     {
         if (node == node->parent->left)
@@ -428,16 +447,28 @@ bool IsFound(RBtree* tree, elem_t key)
 	return true;
 }
 
+elem_t KthStatistik(RBtree* tree, Node* node, int k)
+{
+    if (-1 * k == node->left->num - 1)
+    {
+        return node->key;
+    }
+    if (-k > node->left->num - 1)
+    {
+        return KthStatistik(tree, node->left, k);
+    }
+    return KthStatistik(tree, node->right, k + node->left->num - 2);
+}
 
 void PrintNodes(RBtree* tree, Node* node, FILE* DumpFile)
 {
 	if (node->color == red)
 	{
-		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d\"]", node, node->key);
+		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d | %d\"]", node, node->key, -node->num);
 	}
 	else
 	{ 
-		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d\"]", node, node->key);
+		fprintf(DumpFile, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d | %d\"]", node, node->key, -node->num);
 	}
 	if (node->left != tree->NIL)
 	{
@@ -481,12 +512,12 @@ void PrintNodesHard(RBtree* tree, Node* node, FILE* DumpFile)
 
 void TreeDump(RBtree* tree)
 {
-	FILE* DumpFile = fopen("RBtree.txt", "w");
+    FILE* DumpFile = fopen("RBtree.txt", "w");
 
 	fprintf(DumpFile, "digraph G{\n");
-	fprintf(DumpFile, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"];\n");
+	fprintf(DumpFile, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"]\n");
 
-	PrintNodes(tree, tree->root, DumpFile);
+	PrintNodesHard(tree, tree->root, DumpFile);
 
 	fprintf(DumpFile, "}");
 

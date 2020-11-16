@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef int elem_t;
 
@@ -23,6 +24,8 @@ struct Node
 	Node* left = nullptr;
 	Node* right = nullptr;
 	Node* parent = nullptr;	
+
+	int num = 0;
 };
 
 struct RBtree
@@ -47,6 +50,7 @@ Node* NodePrev(RBtree* tree, Node* node);
 
 Node* Find(RBtree* tree, elem_t key);
 bool IsFound(RBtree* tree, elem_t key);
+elem_t KthStatistik(RBtree* tree, Node* node, int k);
 
 void Destruct(RBtree* tree);
 

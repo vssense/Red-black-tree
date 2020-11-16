@@ -7,10 +7,28 @@ int main()
 	RBtree tree = {};
 	Construct(&tree);
 	
-	for (int i = 0; i < 50; ++i)
+
+	// Insert(&tree, 10);
+	// Insert(&tree, 5);
+	// Insert(&tree, 15);
+	// Insert(&tree, 3);
+	// Insert(&tree, 8);
+	// Insert(&tree, 12);
+	// Insert(&tree, 17);
+	// Insert(&tree, 1);
+	// Insert(&tree, 4);
+	// Insert(&tree, 6);
+	// Insert(&tree, 9);
+	// Insert(&tree, 11);
+	// Insert(&tree, 14);
+	// Insert(&tree, 16);
+	// Insert(&tree, 18);
+
+	for (int i = 1; i < 50; ++i)
 	{
 	    Insert(&tree, i);
 	}
+	printf("%d\n", KthStatistik(&tree, tree.root, 2));
 
 	// Insert(&tree, 10);
 	// Insert(&tree, 12);
@@ -34,11 +52,10 @@ int main()
 	// Insert(&tree, 2);
 	// Insert(&tree, 8);
 		
-	for (int i = 0; i < 10; ++i)
-	{
-		Delete(&tree, i * 5);	
-	}
-	// Delete(&tree, tree.root->left->left);
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// 	Delete(&tree, i * 5);	
+	// }
 	// Delete(&tree, tree.root->right->left);
 	// Delete(&tree, tree.root->right->left);
 	// Delete(&tree, tree.root->right->left);
