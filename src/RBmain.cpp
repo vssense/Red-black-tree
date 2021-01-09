@@ -24,11 +24,14 @@ int main()
 	// Insert(&tree, 16);
 	// Insert(&tree, 18);
 
-	for (int i = 1; i < 50; ++i)
+	for (int i = 0; i < 50; ++i)
 	{
 	    Insert(&tree, i);
 	}
-	printf("%d\n", KthStatistik(&tree, tree.root, 2));
+
+	printf("%d\n", KthStatistics(&tree, tree.root, 24));
+	printf("%d\n", LowerBound(&tree, 79)->key);
+	printf("%d\n", UpperBound(&tree, -2)->key);
 
 	// Insert(&tree, 10);
 	// Insert(&tree, 12);
