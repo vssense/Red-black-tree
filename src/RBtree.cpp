@@ -68,6 +68,300 @@ Node* FindParent(RBtree* tree, ElemT key)
 
     return parent;
 }
+void Insert(RBtree* tree, ElemT key)
+{
+    assert(tree);
+
+    Node* parent   = FindParent(tree, key);   
+    Node* new_node = ConstructNode(tree, parent, key);
+
+    if (parent == tree->NIL)
+    {
+        tree->root = new_node;
+    }
+    else
+    {
+        if (tree->cmp(&key, &parent->key) > 0)
+        {
+            parent->right = new_node;
+        }
+        else
+        {
+            parent->left = new_node;
+        }
+    }
+
+    InsertBalance(tree, new_node);
+}
+
+void InsertBalance(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    while (node->parent->color != black)
+    {
+        if (node->parent == node->parent->parent->left)
+        {
+            Node* uncle = node->parent->parent->right;
+            if (uncle->color == red)
+            {
+                node->parent->color  = black;
+                uncle->parent->color = red;
+                uncle->color         = black;
+                node                 = uncle->parent;
+            }
+            else //uncle->color == black
+            {
+                if (node == node->parent->right)
+                {
+                    node = node->parent;
+                    RotateLeft(tree, node);
+                }
+                node->parent->color         = black;
+                node->parent->parent->color = red;
+                RotateRight(tree, node->parent->parent);
+            }
+        }
+        else
+        {
+            Node* uncle = node->parent->parent->left;
+            if (uncle->color == red)
+            {
+                node->parent->color  = black;
+                uncle->parent->color = red;
+                uncle->color         = black;
+                node                 = uncle->parent;
+            }
+            else //uncle->color == black
+            {
+                if (node == node->parent->left)
+                {
+                    node = node->parent;
+                    RotateRight(tree, node);
+                }
+                node->parent->color         = black;
+                node->parent->parent->color = red;
+                RotateLeft(tree, node->parent->parent);
+            }
+
+        }
+    }
+
+    tree->root->color = black;
+}
+
+void Transplant(RBtree* tree, Node* old_node, Node* new_node)
+{
+    assert(tree);
+    assert(old_node);
+    assert(new_node);
+
+    if (old_node->parent == tree->NIL)
+    {
+        tree->root = new_node;
+    }
+    else if (old_node->parent->left == old_node)
+    {
+        old_node->parent->left = new_node;
+    }
+    else 
+    {
+        old_node->parent->right = new_node;
+    }
+
+    new_node->num    = old_node->num;
+    new_node->parent = old_node->parent;
+}
+
+Node* TreeMin(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    Node* parent = node->parent;
+
+    while (node != tree->NIL)
+    {
+        parent = node;
+        node = node->left;
+    }
+
+    return parent;
+}
+
+Node* TreeMax(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    Node* parent = node->parent;
+
+    while (node != tree->NIL)
+    {
+        parent = node;
+        node   = node->right;
+    }
+
+    return parent;
+}
+
+void FixNums(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    while (node != tree->root)
+    {
+        node->num++;
+        node = node->parent;
+    }
+
+    node->num++;
+}
+
+void Delete(RBtree* tree, ElemT key)
+{
+    assert(tree);
+
+    Node* node_to_delete = Find(tree, key);
+
+    if (node_to_delete != tree->NIL)
+    {
+        DeleteNode(tree, node_to_delete);
+    }
+}
+
+void DeleteNode(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    Node* node_for_balance = nullptr;
+    Color original_color   = node->color;
+
+    if (node->right == tree->NIL)
+    {
+        node_for_balance = node->left;
+        Transplant(tree, node, node->left);
+    }
+    else if (node->left == tree->NIL)
+    {
+        node_for_balance = node->right;
+        Transplant(tree, node, node->right);
+    }
+    else
+    {
+        Node* closest    = TreeMin(tree, node->right);
+        original_color   = closest->color; 
+        node_for_balance = closest->right;
+
+        if (closest->parent ==  node)
+        {
+            node_for_balance->parent = closest;
+        }
+        else
+        {
+            Transplant(tree, closest, closest->right);
+            closest->right         = node->right;
+            closest->right->parent = closest;
+        }
+
+        Transplant(tree, node, closest);
+        closest->left         = node->left;
+        closest->left->parent = closest;
+        closest->color        = node->color;
+        free(node);
+    }
+    
+    if (original_color == black)
+    {
+        DeleteBalance(tree, node_for_balance);
+    }
+}
+
+void DeleteBalance(RBtree* tree, Node* node)
+{
+    assert(tree);
+    assert(node);
+
+    FixNums(tree, node);
+    
+    while (node != tree->root && node->color == black)
+    {
+        if (node == node->parent->left)
+        {
+            Node* brother = node->parent->right;
+            if (brother->color == red) 
+            {
+                brother->color      = black;
+                node->parent->color = red;
+                RotateLeft(tree, node->parent);
+                brother = node->parent->right;
+            }
+
+            if (brother->left->color == black &&
+                brother->right->color == black)
+            {
+                brother->color = red;
+                node           = node->parent;
+            }
+            else 
+            {
+                if (brother->right->color == black)
+                {
+                    brother->left->color = black;
+                    brother->color       = red;
+                    RotateRight(tree, brother);
+                    brother = node->parent->right;
+                }
+                
+                brother->color        = node->parent->color;
+                node->parent->color   = black;
+                brother->right->color = black;
+                RotateLeft(tree, node->parent);
+                node = tree->root;
+            }
+        }
+        else /*(node == node->parent->right)*/
+        {
+            Node* brother = node->parent->left;
+            if (brother->color == red) 
+            {
+                brother->color      = black;
+                node->parent->color = red;
+                RotateRight(tree, node->parent);
+                brother = node->parent->left;
+            }
+
+            if (brother->left->color == black &&
+                brother->right->color == black)
+            {
+                brother->color = red;
+                node           = node->parent;
+            }
+            else 
+            {
+                if (brother->left->color == black)
+                {
+                    brother->right->color = black;
+                    brother->color        = red;
+                    RotateLeft(tree, brother);
+                    brother = node->parent->left;
+                }
+
+                brother->color       = node->parent->color;
+                node->parent->color  = black;
+                brother->left->color = black;
+                RotateRight(tree, node->parent);
+                node = tree->root;
+            }   
+        }
+    }
+
+    node->color = black;
+}
+
 
 Node* ConstructNode(RBtree* tree, Node* parent, ElemT key)
 {
@@ -153,300 +447,6 @@ void RotateLeft(RBtree* tree, Node* node)
     node->num         = node->left->num + node->right->num - 2;
     right_child->num  = right_child->left->num + right_child->right->num - 2;
 }
-
-void InsertBalance(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    while (node->parent->color != black)
-    {
-        if (node->parent == node->parent->parent->left)
-        {
-            Node* uncle = node->parent->parent->right;
-            if (uncle->color == red)
-            {
-                node->parent->color  = black;
-                uncle->parent->color = red;
-                uncle->color         = black;
-                node                 = uncle->parent;
-            }
-            else //uncle->color == black
-            {
-                if (node == node->parent->right)
-                {
-                    node = node->parent;
-                    RotateLeft(tree, node);
-                }
-                node->parent->color         = black;
-                node->parent->parent->color = red;
-                RotateRight(tree, node->parent->parent);
-            }
-        }
-        else
-        {
-            Node* uncle = node->parent->parent->left;
-            if (uncle->color == red)
-            {
-                node->parent->color  = black;
-                uncle->parent->color = red;
-                uncle->color         = black;
-                node                 = uncle->parent;
-            }
-            else //uncle->color == black
-            {
-                if (node == node->parent->left)
-                {
-                    node = node->parent;
-                    RotateRight(tree, node);
-                }
-                node->parent->color         = black;
-                node->parent->parent->color = red;
-                RotateLeft(tree, node->parent->parent);
-            }
-
-        }
-    }
-
-    tree->root->color = black;
-}
-
-void Insert(RBtree* tree, ElemT key)
-{
-    assert(tree);
-
-    Node* parent   = FindParent(tree, key);   
-    Node* new_node = ConstructNode(tree, parent, key);
-
-    if (parent == tree->NIL)
-    {
-        tree->root = new_node;
-    }
-    else
-    {
-        if (tree->cmp(&key, &parent->key) > 0)
-        {
-            parent->right = new_node;
-        }
-        else
-        {
-            parent->left = new_node;
-        }
-    }
-
-    InsertBalance(tree, new_node);
-}
-
-void Transplant(RBtree* tree, Node* old_node, Node* new_node)
-{
-    assert(tree);
-    assert(old_node);
-    assert(new_node);
-
-    if (old_node->parent == tree->NIL)
-    {
-        tree->root = new_node;
-    }
-    else if (old_node->parent->left == old_node)
-    {
-        old_node->parent->left = new_node;
-    }
-    else 
-    {
-        old_node->parent->right = new_node;
-    }
-
-    new_node->num    = old_node->num;
-    new_node->parent = old_node->parent;
-}
-
-Node* TreeMin(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    Node* parent = node->parent;
-
-    while (node != tree->NIL)
-    {
-        parent = node;
-        node = node->left;
-    }
-
-    return parent;
-}
-
-Node* TreeMax(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    Node* parent = node->parent;
-
-    while (node != tree->NIL)
-    {
-        parent = node;
-        node   = node->right;
-    }
-
-    return parent;
-}
-
-void FixNums(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    while (node != tree->root)
-    {
-        node->num++;
-        node = node->parent;
-    }
-
-    node->num++;
-}
-
-void DeleteBalance(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    FixNums(tree, node);
-    
-    while (node != tree->root && node->color == black)
-    {
-        if (node == node->parent->left)
-        {
-            Node* brother = node->parent->right;
-            if (brother->color == red) 
-            {
-                brother->color      = black;
-                node->parent->color = red;
-                RotateLeft(tree, node->parent);
-                brother = node->parent->right;
-            }
-
-            if (brother->left->color == black &&
-                brother->right->color == black)
-            {
-                brother->color = red;
-                node           = node->parent;
-            }
-            else 
-            {
-                if (brother->right->color == black)
-                {
-                    brother->left->color = black;
-                    brother->color       = red;
-                    RotateRight(tree, brother);
-                    brother = node->parent->right;
-                }
-                brother->color        = node->parent->color;
-                node->parent->color   = black;
-                brother->right->color = black;
-                RotateLeft(tree, node->parent);
-                node = tree->root;
-            }
-        }
-        else /*(node == node->parent->right)*/
-        {
-            Node* brother = node->parent->left;
-            if (brother->color == red) 
-            {
-                brother->color      = black;
-                node->parent->color = red;
-                RotateRight(tree, node->parent);
-                brother = node->parent->left;
-            }
-
-            if (brother->left->color == black &&
-                brother->right->color == black)
-            {
-                brother->color = red;
-                node           = node->parent;
-            }
-            else 
-            {
-                if (brother->left->color == black)
-                {
-                    brother->right->color = black;
-                    brother->color        = red;
-                    RotateLeft(tree, brother);
-                    brother = node->parent->left;
-                }
-
-                brother->color       = node->parent->color;
-                node->parent->color  = black;
-                brother->left->color = black;
-                RotateRight(tree, node->parent);
-                node = tree->root;
-            }   
-        }
-    }
-
-    node->color = black;
-}
-
-void DeleteNode(RBtree* tree, Node* node)
-{
-    assert(tree);
-    assert(node);
-
-    Node* node_for_balance = nullptr;
-    Color original_color   = node->color;
-
-    if (node->right == tree->NIL)
-    {
-        node_for_balance = node->left;
-        Transplant(tree, node, node->left);
-    }
-    else if (node->left == tree->NIL)
-    {
-        node_for_balance = node->right;
-        Transplant(tree, node, node->right);
-    }
-    else
-    {
-        Node* closest    = TreeMin(tree, node->right);
-        original_color   = closest->color; 
-        node_for_balance = closest->right;
-
-        if (closest->parent ==  node)
-        {
-            node_for_balance->parent = closest;
-        }
-        else
-        {
-            Transplant(tree, closest, closest->right);
-            closest->right         = node->right;
-            closest->right->parent = closest;
-        }
-
-        Transplant(tree, node, closest);
-        closest->left         = node->left;
-        closest->left->parent = closest;
-        closest->color        = node->color;
-        free(node);
-    }
-    
-    if (original_color == black)
-    {
-        DeleteBalance(tree, node_for_balance);
-    }
-}
-
-void Delete(RBtree* tree, ElemT key)
-{
-    assert(tree);
-
-    Node* node_to_delete = Find(tree, key);
-
-    if (node_to_delete != tree->NIL)
-    {
-        DeleteNode(tree, node_to_delete);
-    }
-}
-
 
 Node* NodeNext(RBtree* tree, Node* node)
 {
@@ -570,6 +570,7 @@ Node* UpperBound(RBtree* tree, ElemT key)
             live_node = live_node->right;
         }
     }
+
     return min;
 }
 
@@ -605,6 +606,24 @@ Node* LowerBound(RBtree* tree, ElemT key)
     return max;
 }
 
+void TreeDump(RBtree* tree)
+{
+    assert(tree);
+
+    FILE* dump_file = fopen("RBtree.txt", "w");
+
+    fprintf(dump_file, "digraph G{\n");
+    fprintf(dump_file, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"]\n");
+
+    PrintNodes(tree, tree->root, dump_file);
+
+    fprintf(dump_file, "}");
+
+    fclose(dump_file);
+
+    system("dot -Tjpg RBtree.txt > RBtree.jpg");
+    system("start RBtree.jpg");
+}
 
 void PrintNodes(RBtree* tree, Node* node, FILE* dump_file)
 {
@@ -662,28 +681,17 @@ void PrintNodesHard(RBtree* tree, Node* node, FILE* dump_file)
     }
 }
 
-void TreeDump(RBtree* tree)
-{
-    assert(tree);
-
-    FILE* dump_file = fopen("RBtree.txt", "w");
-
-    fprintf(dump_file, "digraph G{\n");
-    fprintf(dump_file, "node [shape=\"circle\", style=\"filled\", fillcolor=\"#C0FFC0\"]\n");
-
-    PrintNodes(tree, tree->root, dump_file);
-
-    fprintf(dump_file, "}");
-
-    fclose(dump_file);
-
-    system("dot -Tjpg RBtree.txt > RBtree.jpg");
-    system("start RBtree.jpg");
-}
-
 int IntCmp(const void* elem1, const void* elem2)
 {
     return *(int*)elem1 - *(int*)elem2;
+}
+
+void Destruct(RBtree* tree)
+{
+    assert(tree);
+
+    DestructNodes(tree, tree->root);
+    free(tree->NIL);
 }
 
 void DestructNodes(RBtree* tree, Node* node)
@@ -698,11 +706,3 @@ void DestructNodes(RBtree* tree, Node* node)
         free(node);
     }
 }   
-
-void Destruct(RBtree* tree)
-{
-    assert(tree);
-
-    DestructNodes(tree, tree->root);
-    free(tree->NIL);
-}

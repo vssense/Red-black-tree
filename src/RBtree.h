@@ -11,7 +11,7 @@ const int min_key = -max_key;
 typedef bool Color;
 
 const bool black = true; 
-const bool red = false;
+const bool red   = false;
 
 
 struct Node
