@@ -28,13 +28,13 @@ struct Node
     Node* right  = nullptr;
     Node* parent = nullptr; 
 
-    int num = 0;
+    size_t num = 0;
 };
 
 struct RBtree
 {
     Node* root = nullptr;
-    Node* NIL  = nullptr;
+    Node* nil  = nullptr;
 
     int (*cmp)(const void*, const void*);
 };
@@ -48,10 +48,10 @@ void  Destruct     (RBtree* tree);
 void  TreeDump     (RBtree* tree);
 Node* NodeNext     (RBtree* tree, Node* node);
 Node* NodePrev     (RBtree* tree, Node* node);
-Node* Find         (RBtree* tree, ElemT key);
-bool  IsFound      (RBtree* tree, ElemT key);
+Node* FindNode     (RBtree* tree, ElemT key);
+bool  Find         (RBtree* tree, ElemT key);
 
-ElemT KthStatistics(RBtree* tree, Node* node, int k);
+ElemT KthStatistics(RBtree* tree, Node* node, size_t k);
 Node* UpperBound   (RBtree* tree, ElemT key);
 Node* LowerBound   (RBtree* tree, ElemT key);
 Node* TreeMin      (RBtree* tree, Node* node);

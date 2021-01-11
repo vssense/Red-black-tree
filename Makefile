@@ -3,11 +3,13 @@ options = -Wall -Wextra
 bin = bin
 src = src
 
+size = 1000000
+
 run  : $(bin)\RBtree.exe
 	$(bin)\RBtree.exe
 
 test : $(bin)\RBtest.exe
-	$(bin)\RBtest.exe
+	$(bin)\RBtest.exe $(size)
 
 $(bin)\RBtest.exe : $(bin)\RBtree.o $(bin)\RBtest.o
 	g++ $(bin)\RBtree.o $(bin)\RBtest.o -o $(bin)\RBtest.exe $(options)
