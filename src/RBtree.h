@@ -41,9 +41,9 @@ struct RBtree
 
 void  Construct    (RBtree* tree);
 void  Construct    (RBtree* tree, int (*cmp)(const void*, const void*));
+void  Destruct     (RBtree* tree);
 void  Insert       (RBtree* tree, ElemT key);
 void  Delete       (RBtree* tree, ElemT key);
-void  Destruct     (RBtree* tree);
 
 void  TreeDump     (RBtree* tree);
 Node* NodeNext     (RBtree* tree, Node* node);

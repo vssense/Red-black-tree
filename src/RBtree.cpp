@@ -649,11 +649,11 @@ void PrintNodes(RBtree* tree, Node* node, FILE* dump_file)
 
     if (node->color == red)
     {
-        fprintf(dump_file, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d | %llu\"]", node, node->key, node->num);
+        fprintf(dump_file, "\"%p\"[style=\"filled\", fillcolor=\"#E16456\", fontcolor=\"black\", label=\"%d\"]", node, node->key);
     }
     else
     { 
-        fprintf(dump_file, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d | %llu\"]", node, node->key, node->num);
+        fprintf(dump_file, "\"%p\"[style=\"filled\", fillcolor=\"#110F0F\", fontcolor=\"white\", label=\"%d\"]", node, node->key);
     }
     if (node->left != tree->nil)
     {
